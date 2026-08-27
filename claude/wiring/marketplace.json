@@ -1,0 +1,24 @@
+{
+  "$schema": "https://schemas.claude.com/plugin-marketplace.json",
+  "name": "nolabs-ai",
+  "description": "nono-managed marketplace for nolabs-ai",
+  "owner": { "name": "nolabs-ai" },
+  "plugins": [
+    {
+      "name": "nono",
+      "description": "Teaches Claude Code how to work inside a nono security sandbox. Provides sandbox-aware diagnostics on permission failures and instructions for capability management.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Always Further",
+        "url": "https://github.com/nolabs-ai"
+      },
+      "source": "./plugins/nono",
+      "category": "security",
+      "strict": false,
+      "homepage": "https://nono.sh",
+      "repository": "https://github.com/nolabs-ai/nono-packs/tree/main/claude",
+      "license": "Apache-2.0",
+      "keywords": ["nono", "sandbox", "security", "capabilities"]
+    }
+  ]
+}

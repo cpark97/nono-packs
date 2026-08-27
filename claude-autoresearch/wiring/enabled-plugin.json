@@ -1,0 +1,5 @@
+{
+  "enabledPlugins": {
+    "claude-autoresearch@nolabs-ai": true
+  }
+}
