@@ -15,8 +15,8 @@ if [[ -z "${UPSTREAM_BRANCH:-}" ]]; then
   exit 1
 fi
 
-if [[ "$UPSTREAM_BRANCH" == "main" || "$UPSTREAM_BRANCH" == "empty" ]]; then
-  echo "Error: UPSTREAM_BRANCH cannot be 'main' or 'empty'" >&2
+if [[ "$UPSTREAM_BRANCH" == "master" || "$UPSTREAM_BRANCH" == "empty" ]]; then
+  echo "Error: UPSTREAM_BRANCH cannot be 'master' or 'empty'" >&2
   exit 1
 fi
 
