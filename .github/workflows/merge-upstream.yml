@@ -1,0 +1,42 @@
+name: Merge Upstream Branch
+
+on:
+  schedule:
+    - cron: "0 20 * * *"
+  workflow_dispatch:
+    inputs:
+      upstream_branch:
+        description: "Upstream branch to merge"
+        required: true
+        type: choice
+        options:
+          - main
+
+env:
+  UPSTREAM_BRANCH: ${{ inputs.upstream_branch || 'main' }}
+
+concurrency:
+  group: merge-upstream
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Run merge.sh
+        env:
+          UPSTREAM_BRANCH: ${{ env.UPSTREAM_BRANCH }}
+        run: bash merge.sh
+
+      - name: Push changes
+        run: git push origin "${{ env.UPSTREAM_BRANCH }}"
