@@ -8,6 +8,16 @@
 
 It installs a Claude plugin, hook definitions, shell helpers, and a packaged skill that make Claude Code behave correctly when it is running inside a `nono` security sandbox.
 
+## Quick start
+
+```bash
+# Install the pack
+nono pull nolabs-ai/claude
+
+# Run Claude Code inside the sandbox
+nono run --profile nolabs-ai/claude -- claude
+```
+
 ## What It Does
 
 This pack is focused on one problem: when Claude hits a sandbox boundary, it should stop guessing and explain the real fix.
@@ -34,6 +44,20 @@ When Claude is running inside a `nono` sandbox and a tool call fails due to bloc
 
 This prevents common bad guidance such as retrying the same action, suggesting `chmod`, or treating the failure like a normal OS permissions issue.
 
+## Sandbox Preparation
+
+The profile also has to make Claude Code's own runtime paths usable inside the sandbox.
+
+On Linux it grants `$XDG_RUNTIME_DIR/cc-socks`, the directory where Claude Code binds the
+AF_UNIX sockets it uses for cross-session messaging. Without it, sessions start with
+`Cross-session messaging is off: its socket directory could not be set up`.
+
+Landlock and Seatbelt can only attach a rule to a path that already exists, and a grant for
+a missing path is silently skipped — so `cc-socks` (tmpfs, gone after every logout) and the
+Claude state directories under `$HOME` would be dropped from the capability set on a fresh
+machine. `bin/ensure-dirs.sh` runs as a `session_hooks.before` script, on the host and
+before the sandbox boundary goes up, and creates them first.
+
 ## Included Artifacts
 
 The pack currently ships:
@@ -43,6 +67,7 @@ The pack currently ships:
 - `hooks/hooks.json`
 - `bin/nono-hook.sh`
 - `bin/nono-hook-bash.sh`
+- `bin/ensure-dirs.sh`
 
 These artifacts are declared in [`package.json`](./package.json).
 

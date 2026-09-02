@@ -5,7 +5,7 @@ version: 1.2.0
 platforms: [macos, linux]
 ---
 
-**On any EPERM / EACCES / "Operation not permitted" tool or shell failure:** run `nono why --path <blocked-path> --op read` immediately and include its output verbatim in your reply. Do NOT suggest sudo, chmod, or system permission changes. Then offer the user exactly these two options:
+**On any EPERM / EACCES / "Operation not permitted" tool or shell failure:** run `nono why --self --path <blocked-path> --op read` immediately and include its output verbatim in your reply. Do NOT suggest sudo, chmod, or system permission changes. Then offer the user exactly these two options:
 
 - **Option A (quick fix):** `nono run --allow /path/to/needed -- opencode`
 - **Option B (persistent fix):** draft a profile to `$XDG_CONFIG_HOME/nono/profile-drafts/<name>.json` extending `opencode`, add the path under `"allow"` or `"read"`, then tell the user to run `nono profile promote <name>` and start sessions with `nono run --profile <name> -- opencode`
@@ -37,7 +37,7 @@ Network-egress denials look different: a request to a host that is not on the sa
 
 Run `nono why` to see exactly why access was denied:
 
-    nono why --path /the/blocked/path --op read
+    nono why --self --path /the/blocked/path --op read
 
 Use `--op write` for write-only failures and `--op readwrite` when the operation needs both.
 
@@ -84,7 +84,7 @@ After drafting, tell the user:
 
 ## Network egress denials
 
-nono routes outbound traffic through a filtering proxy. When `network.block` is false but a host allowlist is set, only allowlisted hosts are reachable and every other connection fails — usually as a connection refused, timeout, or TLS/proxy error rather than an EPERM. `nono-status` lists the reachable hosts under "reachable hosts". Retries, alternate endpoints, proxies, or DNS changes cannot bypass the proxy; it is OS-enforced.
+nono routes outbound traffic through a filtering proxy. When `network.block` is false but a host allowlist is set, only allowlisted hosts are reachable and every other connection fails — usually as a connection refused, timeout, or TLS/proxy error rather than an EPERM. `nono_status` lists the reachable hosts under "reachable hosts". Retries, alternate endpoints, proxies, or DNS changes cannot bypass the proxy; it is OS-enforced.
 
 If a host is genuinely needed, present the same two options as for filesystem denials.
 
@@ -145,7 +145,7 @@ nono prints the session ID on start. Reattach from any terminal:
 
     nono attach <session-id>
 
-The session ID is also available inside the session as `NONO_SESSION_ID`. The installed plugin surfaces it in the `nono-status` command output.
+The session ID is also available inside the session as `NONO_SESSION_ID`. The installed plugin surfaces it in the `nono_status` tool output.
 
 To list active nono sessions:
 
@@ -162,7 +162,7 @@ Detached sessions inherit the same sandbox profile as interactive ones — the s
 - opencode state, sessions, config, and cache live under `~/.opencode`, `$XDG_CONFIG_HOME/opencode`, `$XDG_CACHE_HOME/opencode`, `$XDG_DATA_HOME/opencode`, and `$XDG_STATE_HOME/opencode`. The base profile grants all of these read/write.
 - The plugin at `$XDG_CONFIG_HOME/opencode/plugins/nono-sandbox.ts` is symlinked from the pack store. It updates automatically on `nono pull`.
 - The skill at `$XDG_CONFIG_HOME/opencode/skills/nono-sandbox/` is similarly symlinked.
-- The `nono-status` command (registered by the plugin) shows the active capability set, the network egress allowlist (reachable hosts), enabled credential routes, and the session ID for reattach.
+- The `nono_status` tool (registered by the plugin) shows the active capability set, the network egress allowlist (reachable hosts), enabled credential routes, and the session ID for reattach.
 - Do not add provider secrets to opencode's own config files. Route them through `network.credentials` in the profile instead.
 
 ## Path conventions
