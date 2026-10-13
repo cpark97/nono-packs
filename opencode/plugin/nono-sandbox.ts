@@ -183,9 +183,8 @@ function buildStatusReport(caps: Caps | null): string {
   return lines.filter(Boolean).join("\n")
 }
 
-// Shared by both plugin generations: append a guidance block to a v2-style
-// content value (a plain string or an array of { type: "text", text } parts),
-// returning the updated value.
+// Append a guidance block to a v2 content value (a plain string or an array
+// of { type: "text", text } parts), returning the updated value.
 function appendContentGuidance(content: unknown, guidance: string): unknown {
   if (typeof content === "string") return content + guidance
   if (Array.isArray(content)) {
@@ -209,82 +208,10 @@ function appendContentGuidance(content: unknown, guidance: string): unknown {
   return content
 }
 
-// v1 hook object. OpenCode 1.18.29+ calls server(); this path is kept until
-// the v1 support window ends, then this function is deleted with the
-// `async server()` binding below.
-function v1Hooks() {
-  const caps = readCaps()
-
-  return {
-    // Inject nono context into the system prompt so the model knows the rules
-    ...(caps
-      ? {
-          "experimental.chat.system.transform": async (
-            _input: unknown,
-            output: { system: string[] },
-          ) => {
-            output.system.push(buildSystemContext(caps))
-          },
-        }
-      : {}),
-
-    // Custom tool nono_status that outputs caps
-    tool: {
-      nono_status: {
-        description: NONO_STATUS_DESCRIPTION,
-        args: {},
-        execute: async () => ({
-          title: "nono sandbox status",
-          output: buildStatusReport(readCaps()),
-        }),
-      },
-    },
-
-    // Fires after every tool call. When the result contains a denial
-    // signature we append capability context and Option A/B remediation.
-    "tool.execute.after": async (
-      input: { tool: string; sessionID: string; callID: string; args: unknown },
-      result: unknown,
-    ) => {
-      if (!DENIAL_PATTERN.test(JSON.stringify(result))) return
-
-      const liveCaps = readCaps()
-      if (!liveCaps) return
-
-      const inputText = JSON.stringify(input)
-      const resultText = JSON.stringify(result)
-      const blockedPath = extractPath(inputText) ?? extractPath(resultText)
-
-      appendGuidance(result, buildGuidance(liveCaps, blockedPath))
-    },
-  }
-}
-
-// v1 result mutation. Keeps the historical v1 behavior byte-for-byte: result
-// is the opencode v1 tool output, which carries the display text in the
-// `output` field while MCP-style tools carry `content` parts. Note the
-// string-content branch appends to `output` — that quirk is preserved from
-// the original plugin so v1 behavior does not change; leave it alone when
-// deleting the v1 path later.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function appendGuidance(result: any, guidance: string): void {
-  if (!result || typeof result !== "object") return
-  const r = result as Record<string, unknown>
-
-  if (typeof r.content === "string") {
-    r.output += guidance
-    return
-  }
-  if (Array.isArray(r.content)) {
-    r.content = appendContentGuidance(r.content, guidance)
-  }
-}
-
 // The v2 loader validates the default export by shape: it needs `id` plus a
 // `setup` function. `Plugin.define` from "@opencode/plugin" is only an
 // identity helper, so we export the object literal directly instead. This
-// keeps the plugin self-contained (no node_modules) so it loads as a raw
-// file in both v1 (which calls `server`) and v2 (which calls `setup`).
+// keeps the plugin self-contained (no node_modules) so it loads as a raw file.
 export default {
   id: "nono-sandbox",
 
@@ -347,12 +274,5 @@ export default {
         event.result.content = appendContentGuidance(event.result.content, guidance)
       }
     })
-  },
-
-  // v1 entrypoint. OpenCode 1.18.29+ calls server(); remove this binding (and
-  // v1Hooks above) once the v1 support window ends.
-  async server() {
-    if (!insideNono()) return {}
-    return v1Hooks()
   },
 }

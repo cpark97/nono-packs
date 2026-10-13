@@ -1,6 +1,6 @@
-# opencode nono
+# OpenCode v2 nono pack
 
-`opencode` is a `nono` package for [opencode](https://github.com/opencode-ai/opencode).
+`opencode` is the `nono` pack for OpenCode 2.x. Use the separate `nolabs-ai/opencode-v1` pack for OpenCode 1.x.
 
 It installs a sandbox profile, a TypeScript plugin, and a skill that make opencode behave correctly when running inside a `nono` security sandbox — including credential injection, detach/attach session support, and denial diagnostics.
 
@@ -13,28 +13,32 @@ The pack provides:
 - a TypeScript plugin (`plugin/nono-sandbox.ts`) that injects nono sandbox context at session start, detects denial signatures in tool results, appends capability context and Option A/B remediation guidance, surfaces the network egress allowlist, and registers a `nono_status` tool
 - a `nono-sandbox` skill that teaches the correct diagnostic flow for filesystem and network-egress denials, credential route setup, and detach/attach usage
 
-The plugin supports both the OpenCode v1 and v2 plugin APIs from a single file: OpenCode 1.18.29+ calls its `server()` entrypoint, and OpenCode 2.x calls its `setup()` entrypoint. The v2 path registers the session `context` hook, a `nono_status` tool, and the `tool.execute.after` hook; the v1 path provides the equivalent legacy hooks. Removing the v1 support later is a single deletion of the `server()` binding and its helpers (see the v2 support section below).
+The plugin targets the OpenCode v2 plugin API. Its `setup()` entrypoint registers the session `context` hook, a `nono_status` tool, and the `tool.execute.after` hook.
 
 ## OpenCode v2 Sandbox Isolation
 
-OpenCode v2 normally connects clients to a shared background server. That server owns tool execution, plugins, permissions, and network requests, so sandboxing only the client would allow work to escape the active nono session.
+OpenCode v2 normally connects clients to a shared background server. That server owns tool execution, plugins, permissions, and network requests, so sandboxing only the client can allow work to escape the active nono session.
 
-The profile contains that risk by:
+For a fully contained interactive session, launch OpenCode with `--standalone`:
 
-- appending `--standalone` to the OpenCode command, which starts a private server inside the same nono sandbox as the client
-- setting `OPENCODE_DISABLE_PROJECT_CONFIG=1`, which asks supported OpenCode discovery paths to skip project configuration and instructions
-- setting `OPENCODE_TEST_HOME=$WORKDIR`, which reduces home and instruction discovery outside the active workspace without changing the real `HOME` inherited by shell tools
+```bash
+nono run --profile nolabs-ai/opencode -- opencode --standalone
+```
 
-These environment variables are compatibility and defense-in-depth settings, not the security boundary. OpenCode v2 releases have not consistently honored `OPENCODE_DISABLE_PROJECT_CONFIG` across every configuration and component loader. nono remains the enforcement boundary: unexpected discovery attempts can reach only paths explicitly granted by the profile.
+This starts a private OpenCode server inside the same nono sandbox as the client. The pack deliberately does not append `--standalone` automatically because the flag is incompatible with workflows and administrative subcommands such as `serve`, `auth`, and `acp`.
 
-Supplying `--standalone` yourself is safe; OpenCode treats the duplicate boolean flag as idempotent. Supplying `--server` fails closed because OpenCode refuses to combine `--server` and `--standalone`.
+If you omit `--standalone`, OpenCode may connect to an already-running server outside the sandbox. In that configuration, the profile constrains the client process but cannot guarantee that model tools, plugins, or network requests executed by the external server are contained.
+
+The profile sets two OpenCode compatibility variables. nono grants the active workdir, not its parent directories or the user's whole home. OpenCode v2 probes those broader locations during project and instruction discovery and treats the expected sandbox denials as fatal initialization errors. `OPENCODE_DISABLE_PROJECT_CONFIG=1` prevents the parent-directory discovery walk, while `OPENCODE_TEST_HOME=$WORKDIR` keeps core instruction initialization rooted in the granted workdir.
+
+These are compatibility workarounds, not security controls; nono remains the enforcement boundary. Granting a broad parent such as `~/Work` or all of `$HOME` instead would unnecessarily expose sibling projects and unrelated user data. The workaround disables project configuration, instructions, plugins, and other project-discovered OpenCode components. Global OpenCode configuration and the installed nono plugin remain available.
 
 This isolation mode has deliberate compatibility tradeoffs:
 
 - global OpenCode configuration and the installed nono plugin remain available
-- supported discovery paths skip project `opencode.json`/`opencode.jsonc` and project `AGENTS.md`, but affected OpenCode v2 releases may still discover some project configuration or components; treat workspace content as untrusted and rely on the sandbox for containment
-- `OPENCODE_TEST_HOME` is an undocumented OpenCode compatibility mechanism, so pack releases must verify it against their supported OpenCode versions
-- administrative subcommands that do not accept `--standalone`, such as `serve`, `auth`, or `acp`, may fail when launched through this profile; they are not supported agent launch paths
+- project `opencode.json`/`opencode.jsonc`, `AGENTS.md`, plugins, and other project-discovered components are disabled by the startup workaround
+- OpenCode's logical home is set to the active workdir for instruction initialization, while its XDG config, state, data, and cache paths remain unchanged
+- `~/.opencode` is read-only because it contains an executable directory on `PATH`; run OpenCode upgrades outside the sandbox
 
 OpenCode and its runtime may probe parent or system directories during startup. A successful session can therefore end with denied-path notices for paths such as `$HOME`, `$HOME/.config`, `$NONO_CONFIG`, or `/System`. Do not grant those broad paths merely to silence the notices; add a narrower grant only when a required operation actually fails.
 
@@ -108,16 +112,13 @@ nono run --profile nolabs-ai/opencode -- opencode --standalone
 
 After pulling, opencode reads the plugin from `$XDG_CONFIG_HOME/opencode/plugins/nono-sandbox.ts` and the skill from `$XDG_CONFIG_HOME/opencode/skills/nono-sandbox/SKILL.md`. Both are symlinked from the pack store and update automatically on `nono pull`. If `XDG_CONFIG_HOME` is unset, the default `~/.config` applies.
 
-The same symlink location works for both plugin generations: OpenCode 1.x discovers `$XDG_CONFIG_HOME/opencode/plugins/*.ts`, and OpenCode 2.x scans the same `plugins/` directory (it also accepts the `plugin/` name). The plugin is a self-contained TypeScript file with no external package dependencies, so it loads as a raw file in either runtime.
+OpenCode 2.x scans the `plugins/` directory (it also accepts the `plugin/` name). The plugin is a self-contained TypeScript file with no external package dependencies, so it loads as a raw file.
 
-## OpenCode v2 support
+## Compatibility
 
-The plugin ships one file that speaks both plugin APIs (see the v1-to-v2 migration guide at opencode.ai for the dual-export pattern):
+This pack supports OpenCode 2.x only. Use `--standalone` for interactive agent sessions that require the OpenCode server and client to remain inside the same nono sandbox. The pack documents but does not enforce this flag.
 
-- **OpenCode 2.x**: calls the default export's `setup(ctx)`, which registers a session `context` hook (system-context injection), a `nono_status` tool, and a `tool.execute.after` hook for denial diagnostics
-- **OpenCode 1.18.29+**: calls the default export's `server()`, which returns the legacy v1 hooks (system transform, `nono_status` tool, `tool.execute.after`)
-
-Older OpenCode 1.x releases without v1/v2 dual-export support are not covered by this single file; pin a previous pack version if you must support them. Dropping v1 support later means deleting the `server()` binding and the `v1Hooks`/`appendGuidance` helpers from `plugin/nono-sandbox.ts`.
+For OpenCode 1.x, use `nolabs-ai/opencode-v1`. Both packs install into OpenCode's standard plugin and skill locations, so remove the currently installed pack before switching between them.
 
 ## Removing
 
@@ -128,7 +129,8 @@ nono remove nolabs-ai/opencode
 ## Package Metadata
 
 - Name: `opencode`
-- Version: `0.3.0`
+- Version: `0.4.0`
+- OpenCode: `2.x`
 - Pack type: `agent`
 - Platforms: `macos`, `linux`
 - License: `Apache-2.0`
