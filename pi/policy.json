@@ -3,7 +3,7 @@
   "meta": {
     "name": "pi",
     "version": "1.0.0",
-    "description": "Pi Coding Agent profile (registry-managed)",
+    "description": "Pi Coding Agent profile",
     "author": "nolabs-ai"
   },
   "groups": {

@@ -3,7 +3,7 @@
   "meta": {
     "name": "omp",
     "version": "1.0.0",
-    "description": "Oh My Pi coding harness (registry-managed)",
+    "description": "Oh My Pi coding harness",
     "author": "nolabs-ai, rlex, koalajoe23"
   },
   "groups": {

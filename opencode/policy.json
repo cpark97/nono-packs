@@ -2,8 +2,8 @@
   "extends": "default",
   "meta": {
     "name": "opencode",
-    "version": "1.1.0",
-    "description": "OpenCode v2 AI coding assistant (registry-managed)",
+    "version": "1.1.1",
+    "description": "OpenCode v2.1.0+ AI coding assistant",
     "author": "nolabs-ai"
   },
   "groups": {
@@ -99,12 +99,6 @@
   },
   "workdir": {
     "access": "readwrite"
-  },
-  "environment": {
-    "set_vars": {
-      "OPENCODE_DISABLE_PROJECT_CONFIG": "1",
-      "OPENCODE_TEST_HOME": "$WORKDIR"
-    }
   },
   "session_hooks": {
     "before": {

@@ -3,7 +3,7 @@
   "meta": {
     "name": "goose",
     "version": "1.0.0",
-    "description": "Goose CLI agent (registry-managed)",
+    "description": "Goose CLI agent",
     "author": "nolabs-ai"
   },
   "groups": {

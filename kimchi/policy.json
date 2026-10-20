@@ -3,7 +3,7 @@
   "meta": {
     "name": "kimchi",
     "version": "1.0.0",
-    "description": "Kimchi Coding Agent profile (registry-managed)",
+    "description": "Kimchi Coding Agent profile",
     "author": "CastAI, nolabs-ai"
   },
   "groups": {

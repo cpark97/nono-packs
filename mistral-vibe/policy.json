@@ -3,7 +3,7 @@
   "meta": {
     "name": "mistral-vibe",
     "version": "1.0.0",
-    "description": "Mistral Vibe CLI profile (registry-managed)",
+    "description": "Mistral Vibe CLI profile",
     "author": "nolabs-ai"
   },
   "groups": {

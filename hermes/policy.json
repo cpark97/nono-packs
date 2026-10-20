@@ -3,7 +3,7 @@
   "meta": {
     "name": "hermes",
     "version": "1.0.0",
-    "description": "Hermes Agent CLI profile (registry-managed)",
+    "description": "Hermes Agent CLI profile",
     "author": "nolabs-ai"
   },
   "groups": {

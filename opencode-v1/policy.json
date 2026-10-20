@@ -3,7 +3,7 @@
   "meta": {
     "name": "opencode-v1",
     "version": "1.0.0",
-    "description": "OpenCode v1 AI coding assistant (registry-managed)",
+    "description": "OpenCode v1 AI coding assistant",
     "author": "nolabs-ai"
   },
   "groups": {

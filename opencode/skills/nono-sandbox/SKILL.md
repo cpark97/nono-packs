@@ -1,7 +1,7 @@
 ---
 name: nono-sandbox
 description: Diagnose confirmed nono sandbox denials for opencode. Generic permission failures require `nono why` or a clear non-sandbox diagnostic outcome before remediation; network diagnostics remain separate.
-version: 1.3.0
+version: 1.3.1
 platforms: [macos, linux]
 ---
 
@@ -157,9 +157,7 @@ Detached sessions inherit the same sandbox profile as interactive ones — the s
 ## opencode-specific notes
 
 - The base profile does not append `--standalone`. For fully contained interactive sessions, users must supply it explicitly so the OpenCode client and its private tool-executing server run inside the same nono sandbox. Without it, OpenCode may connect to a server outside the sandbox, where tool and network activity is not contained by the active nono session.
-- nono grants the active workdir, not its parent directories or the user's whole home. OpenCode v2 probes those broader locations during project and instruction discovery and treats the expected sandbox denials as fatal initialization errors. The base profile sets `OPENCODE_DISABLE_PROJECT_CONFIG=1` to prevent the parent-directory discovery walk and `OPENCODE_TEST_HOME=$WORKDIR` to keep core instruction initialization rooted in the granted workdir.
-- These environment variables are compatibility workarounds, not security controls; nono remains the enforcement boundary. Do not grant a broad parent such as `~/Work` or all of `$HOME` merely to satisfy discovery probes, because that exposes sibling projects and unrelated user data. The workaround disables project `opencode.json`/`opencode.jsonc`, `AGENTS.md`, plugins, and other project-discovered components; global configuration and the installed nono plugin remain available.
-- OpenCode may harmlessly probe parent or system directories during startup and leave denied-path notices for paths such as `$HOME`, `$HOME/.config`, `$NONO_CONFIG`, or `/System` even when the session works. Do not grant these broad paths to silence the notices; add a narrow grant only when a required operation actually fails.
+- OpenCode v2.1.0 and later tolerate denied project, instruction, parent, and system discovery paths. A successful session may still leave denied-path notices for paths such as `$HOME`, `$HOME/.config`, `$NONO_CONFIG`, or `/System`. Do not grant these broad paths merely to silence harmless discovery probes; add a narrow grant only when a required operation actually fails.
 - The OpenCode installation under `~/.opencode` is read-only because its `bin/` directory is on `PATH`; run OpenCode upgrades outside the sandbox. Runtime config, cache, data, and state remain writable under their XDG paths.
 - The plugin at `$XDG_CONFIG_HOME/opencode/plugins/nono-sandbox.ts` is symlinked from the pack store. It updates automatically on `nono pull`.
 - The skill at `$XDG_CONFIG_HOME/opencode/skills/nono-sandbox/` is similarly symlinked.

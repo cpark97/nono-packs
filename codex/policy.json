@@ -3,7 +3,7 @@
   "meta": {
     "name": "codex",
     "version": "1.0.0",
-    "description": "OpenAI Codex CLI agent (registry-managed)",
+    "description": "OpenAI Codex CLI agent",
     "author": "nolabs-ai"
   },
   "groups": {

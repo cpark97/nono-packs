@@ -3,7 +3,7 @@
   "meta": {
     "name": "deepseek",
     "version": "1.0.0",
-    "description": "DeepSeek Harness (dsh) CLI agent profile (registry-managed)",
+    "description": "DeepSeek Harness (dsh) CLI agent profile",
     "author": "nolabs-ai"
   },
   "groups": {

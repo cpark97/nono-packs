@@ -3,7 +3,7 @@
   "meta": {
     "name": "kilo",
     "version": "1.0.0",
-    "description": "Kilo Code CLI agent profile (registry-managed)",
+    "description": "Kilo Code CLI agent profile",
     "author": "nolabs-ai"
   },
   "groups": {

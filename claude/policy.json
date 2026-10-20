@@ -3,7 +3,7 @@
   "meta": {
     "name": "claude",
     "version": "1.0.0",
-    "description": "Anthropic Claude Code CLI agent (registry-managed)",
+    "description": "Anthropic Claude Code CLI agent",
     "author": "nolabs-ai"
   },
   "groups": {
