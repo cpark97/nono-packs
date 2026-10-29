@@ -13,6 +13,7 @@ mkdir -p \
   "$HOME/.opencode" \
   "$HOME/.config/opencode" \
   "$HOME/.cache/opencode" \
+  "$HOME/.cache/opencode/tmp" \
   "$HOME/.local/share/opencode" \
   "$HOME/.local/share/opentui" \
   "$HOME/.local/state/opencode"

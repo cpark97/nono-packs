@@ -42,21 +42,29 @@ When Claude is running inside a `nono` sandbox and a tool call fails due to bloc
 - recommend restarting with additional `--allow` access when needed
 - recommend creating a reusable `nono` profile for repeated access
 
+The profile also sets `LC_MESSAGES=C` so denial diagnostics stay in English and
+can be matched reliably on localized systems. It does not filter inherited
+environment variables or change other locale categories. An explicitly set
+`LC_ALL` still takes precedence, following standard locale rules.
+
 This prevents common bad guidance such as retrying the same action, suggesting `chmod`, or treating the failure like a normal OS permissions issue.
 
 ## Sandbox Preparation
 
 The profile also has to make Claude Code's own runtime paths usable inside the sandbox.
+Landlock and Seatbelt can only attach a rule to a path that already exists, and nono
+silently drops a standalone grant for a missing one. Because capabilities are resolved
+before `session_hooks.before` runs, creating `/tmp/claude-$UID` in that hook would only
+make the grant available to the *next* session.
 
-On Linux it grants `$XDG_RUNTIME_DIR/cc-socks`, the directory where Claude Code binds the
-AF_UNIX sockets it uses for cross-session messaging. Without it, sessions start with
-`Cross-session messaging is off: its socket directory could not be set up`.
-
-Landlock and Seatbelt can only attach a rule to a path that already exists, and a grant for
-a missing path is silently skipped — so `cc-socks` (tmpfs, gone after every logout) and the
-Claude state directories under `$HOME` would be dropped from the capability set on a fresh
-machine. `bin/ensure-dirs.sh` runs as a `session_hooks.before` script, on the host and
-before the sandbox boundary goes up, and creates them first.
+The profile sets `CLAUDE_CODE_TMPDIR` to `~/.claude/tmp`, where Claude creates its
+per-user `claude-$UID` tree, and points tool-facing `TMPDIR` at that exact tree. Nono
+prepares and grants `~/.claude` before it resolves capabilities, so Claude and its tools
+can create and read temp files on the first launch even when `/tmp/claude-$UID` did not
+exist before the sandbox started. Keeping temp files under this private, already-granted
+directory also avoids broad read access to shared `/tmp`. `bin/ensure-dirs.sh` prepares
+the private temp tree and maintains the other Claude runtime directories, including the
+Linux cross-session socket directory.
 
 ## Included Artifacts
 

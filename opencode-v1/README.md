@@ -10,7 +10,8 @@ The pack provides:
 
 - a sandbox profile (`policy.json`) granting OpenCode's state directories and common runtime dependencies
 - credential injection routes for OpenAI, Anthropic, Gemini, GitHub, and GitLab, disabled by default
-- a host-side first-run hook (`bin/ensure-dirs.sh`) that creates OpenCode state directories before the sandbox is applied
+- installation markers and a host-side hook (`bin/ensure-dirs.sh`) that create OpenCode state directories before first-run sandbox grants are resolved
+- a private temporary directory at `~/.cache/opencode/tmp`, exposed as both `TMPDIR` and `BUN_TMPDIR`, so OpenCode and Bun can create temporary files without granting access to the system-wide temporary directory
 - a TypeScript plugin (`plugin/nono-sandbox.ts`) that injects sandbox context, reports denial diagnostics, and registers the `nono_status` tool
 - a `nono-sandbox` skill with filesystem and network denial guidance
 
@@ -52,7 +53,7 @@ nono pull nolabs-ai/opencode
 
 ## First-Run Directory Bootstrap
 
-Landlock and Seatbelt can grant a filesystem rule only for a path that already exists. The profile runs `bin/ensure-dirs.sh` on the host before applying the sandbox so OpenCode's state, cache, config, and data directories exist on first launch.
+Landlock and Seatbelt can grant a filesystem rule only for a path that already exists. The pack installs zero-byte marker files so OpenCode's state, cache, config, data, and private temporary directories exist before the profile is first resolved. The profile also runs `bin/ensure-dirs.sh` on the host before applying the sandbox.
 
 ## Credential Injection
 

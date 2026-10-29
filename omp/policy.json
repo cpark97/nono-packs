@@ -28,7 +28,8 @@
   "filesystem": {
     "allow": [
       "$HOME/.omp",
-      "$NONO_CONFIG/profile-drafts"
+      "$NONO_CONFIG/profile-drafts",
+      { "path": "/dev/ptmx", "when": "linux" }
     ],
     "read": [
       "$NONO_PACKAGES",

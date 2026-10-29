@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
 # nono-hook-bash.sh - PostToolUse hook for Bash commands
-# Version: 1.1.0
+# Version: 1.2.0
 #
 # Inspects a Bash tool result for sandbox-denial patterns and injects
 # context so Claude can guide the user.
 #
+# 1.2.0: Read the Bash result from tool_response.stdout/stderr, not
+# tool_result: PostToolUse carries no tool_result field, so the old
+# extraction was always empty and the hook never fired. A string
+# tool_response and a string tool_result are still accepted as a
+# fallback for older/batch payloads.
 # 1.1.0: Option B now points at ~/.config/nono/profile-drafts/ + promote
 # CLI, since profiles/ is no longer writable from inside the sandbox.
 
@@ -16,7 +21,10 @@ if ! command -v jq &> /dev/null; then
 fi
 
 INPUT=$(cat)
-OUTPUT=$(echo "$INPUT" | jq -r '.tool_result // ""' 2>/dev/null)
+# PostToolUse Bash results arrive as tool_response {stdout, stderr};
+# tool_result only exists on PostToolBatch payloads. Keep both string
+# forms as fallbacks so older payloads keep working.
+OUTPUT=$(echo "$INPUT" | jq -r '[(.tool_response.stdout? // empty), (.tool_response.stderr? // empty), (if (.tool_response // null) | type == "string" then .tool_response else empty end), (if (.tool_result // null) | type == "string" then .tool_result else empty end)] | join("\n")' 2>/dev/null)
 
 if ! echo "$OUTPUT" | grep -qiE 'operation not permitted|permission denied|EPERM|EACCES|sandbox.*denied|landlock'; then
     exit 0

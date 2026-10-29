@@ -56,6 +56,7 @@ The cleanest approach is to skip (`Enter`) and add any extra paths manually to y
 |----------|--------|--------|
 | `~/.omp/` | read/write | OMP config, sessions, plugins, logs, extensions, skills |
 | `$NONO_CONFIG/profile-drafts/` | read/write | User-authored profile extensions |
+| `/dev/ptmx` (Linux) | read/write | PTY allocation for interactive shell commands such as the `!` shortcut |
 | `$NONO_PACKAGES`, `$NONO_CONFIG/profiles` | read | Registry-managed pack files |
 | `~/.agents/skills`, `~/.codex/skills`, `~/.config/opencode/skills`, `~/.claude/plugins/cache` | read | OMP's cross-agent skill discovery |
 | `~/.codex/config.toml`, `~/.claude/settings.json`, `~/.claude/plugins/installed_plugins.json`, `~/.claude.json` | read | OMP's session-import features (`--from-claude`, `--from-codex`) probe these on startup |

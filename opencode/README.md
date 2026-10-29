@@ -9,7 +9,8 @@ It installs a sandbox profile, a TypeScript plugin, and a skill that make openco
 The pack provides:
 
 - a sandbox profile (`policy.json`) granting the correct filesystem and network access, with credential injection routes for OpenAI, Anthropic, Gemini, GitHub, and GitLab
-- a `session_hooks.before` hook (`bin/ensure-dirs.sh`) that creates opencode's state directories on the host before the sandbox is applied, so first-run doesn't fail when a directory the profile grants access to doesn't exist yet
+- installation markers and a `session_hooks.before` hook (`bin/ensure-dirs.sh`) that create opencode's state directories on the host, so the paths exist when nono resolves their sandbox grants on first run
+- a private temporary directory at `~/.cache/opencode/tmp`, exposed as both `TMPDIR` and `BUN_TMPDIR`, so OpenCode and Bun can create temporary files without granting access to the system-wide temporary directory
 - a TypeScript plugin (`plugin/nono-sandbox.ts`) that injects nono sandbox context at session start, detects denial signatures in tool results, appends capability context and Option A/B remediation guidance, surfaces the network egress allowlist, and registers a `nono_status` tool
 - a `nono-sandbox` skill that teaches the correct diagnostic flow for filesystem and network-egress denials, credential route setup, and detach/attach usage
 
@@ -49,9 +50,9 @@ This prevents common bad guidance such as retrying the same action, suggesting `
 
 ## First-Run Directory Bootstrap
 
-Landlock and Seatbelt can only grant a filesystem rule for a path that already exists. On a first run, a few state/cache/etc. directories don't exist yet, so the sandboxed opencode process fails immediately.
+Landlock and Seatbelt can only grant a filesystem rule for a path that already exists. On a first run, a few state/cache/etc. directories may not exist yet, so the sandboxed opencode process would otherwise fail immediately.
 
-`policy.json` wires `bin/ensure-dirs.sh` as a `session_hooks.before` hook, which nono runs on the host before applying the sandbox to `mkdir -p` them first. The hook resolves through `$PACK_DIR` to the installed pack directory.
+The pack installs zero-byte marker files to create these directories before the profile is first resolved. `policy.json` also wires `bin/ensure-dirs.sh` as a `session_hooks.before` hook, which nono runs on the host before applying the sandbox. The hook resolves through `$PACK_DIR` to the installed pack directory.
 
 ## Credential Injection
 

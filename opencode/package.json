@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "name": "opencode",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "OpenCode v2.1.0+ plugin and matching nono profile. Provides sandbox-aware diagnostics, credential injection, detach/attach support, and a nono_status tool when running inside a nono sandbox.",
   "license": "Apache-2.0",
   "platforms": [
@@ -54,6 +54,36 @@
       "type": "write_file",
       "source": "wiring/profile-drafts-dir-marker",
       "dest": "$NONO_CONFIG/profile-drafts/.nono-opencode-pack-marker"
+    },
+    {
+      "type": "write_file",
+      "source": "wiring/profile-drafts-dir-marker",
+      "dest": "$HOME/.opencode/.nono-opencode-pack-marker"
+    },
+    {
+      "type": "write_file",
+      "source": "wiring/profile-drafts-dir-marker",
+      "dest": "$HOME/.config/opencode/.nono-opencode-pack-marker"
+    },
+    {
+      "type": "write_file",
+      "source": "wiring/profile-drafts-dir-marker",
+      "dest": "$HOME/.cache/opencode/tmp/.nono-opencode-pack-marker"
+    },
+    {
+      "type": "write_file",
+      "source": "wiring/profile-drafts-dir-marker",
+      "dest": "$HOME/.local/share/opencode/.nono-opencode-pack-marker"
+    },
+    {
+      "type": "write_file",
+      "source": "wiring/profile-drafts-dir-marker",
+      "dest": "$HOME/.local/share/opentui/.nono-opencode-pack-marker"
+    },
+    {
+      "type": "write_file",
+      "source": "wiring/profile-drafts-dir-marker",
+      "dest": "$HOME/.local/state/opencode/.nono-opencode-pack-marker"
     },
     {
       "type": "symlink",

@@ -34,8 +34,7 @@
       "$HOME/.claude",
       "$HOME/.codex",
       "$HOME/.npm",
-      "$NONO_CONFIG/profile-drafts",
-      "$TMPDIR"
+      "$NONO_CONFIG/profile-drafts"
     ],
     "read": [
       "$HOME/.opencode",
@@ -115,6 +114,12 @@
     "allow_localhost": true
   },
   "allow_launch_services": true,
+  "environment": {
+    "set_vars": {
+      "TMPDIR": "$HOME/.cache/opencode/tmp",
+      "BUN_TMPDIR": "$HOME/.cache/opencode/tmp"
+    }
+  },
   "rollback": {
     "exclude_patterns": [
       "node_modules",

@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
 # nono-hook.sh - Claude Code plugin hook for nono sandbox diagnostics
-# Version: 1.3.0
+# Version: 1.4.0
 #
 # Fires on PostToolUseFailure for Read|Write|Edit|Bash. Only injects
 # sandbox context when the failure looks like an actual sandbox denial.
 #
+# 1.4.0: Gate on the failure's own output fields (error, tool_response
+# stdout/stderr, tool_result) instead of the whole hook payload, so a
+# tool_input command that merely mentions a denial phrase no longer
+# triggers the hook when the actual failure is unrelated.
 # 1.3.0: Option B now points at ~/.config/nono/profile-drafts/ + promote
 # CLI, since profiles/ is no longer writable from inside the sandbox.
 
@@ -17,8 +21,14 @@ fi
 
 INPUT=$(cat)
 
-# Gate: only fire on actual sandbox denial signatures.
-if ! echo "$INPUT" | grep -qiE 'operation not permitted|permission denied|EPERM|EACCES|sandbox.*denied|landlock'; then
+# Gate: only fire on actual sandbox denial signatures, matched against
+# the failure's own output fields. PostToolUseFailure carries the
+# failure text in top-level `error`; tool_response/tool_result cover
+# payloads that carry it there instead. tool_input is deliberately
+# excluded: a command whose text mentions a denial phrase must not
+# trigger the hook when the failure itself is unrelated.
+ERROR_TEXT=$(echo "$INPUT" | jq -r '[(.error // empty), (.tool_response.stdout? // empty), (.tool_response.stderr? // empty), (if (.tool_response // null) | type == "string" then .tool_response else empty end), (if (.tool_result // null) | type == "string" then .tool_result else empty end)] | join("\n")' 2>/dev/null)
+if ! echo "$ERROR_TEXT" | grep -qiE 'operation not permitted|permission denied|EPERM|EACCES|sandbox.*denied|landlock'; then
     exit 0
 fi
 

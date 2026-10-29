@@ -33,7 +33,6 @@
       "$HOME/.local/state/claude/locks",
       "$HOME/.cache/claude",
       "$NONO_CONFIG/profile-drafts",
-      "/tmp/claude-$UID",
       { "path": "$HOME/Library/Keychains", "when": "macos" }
     ],
     "read": [
@@ -68,6 +67,13 @@
       "https://platform.claude.com"
     ],
     "allow_localhost": true
+  },
+  "environment": {
+    "set_vars": {
+      "CLAUDE_CODE_TMPDIR": "$HOME/.claude/tmp",
+      "LC_MESSAGES": "C",
+      "TMPDIR": "$HOME/.claude/tmp/claude-$UID"
+    }
   },
   "diagnostics": {
     "suppress_system_services": ["forbidden-exec-sugid"]
